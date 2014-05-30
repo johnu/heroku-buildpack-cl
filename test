@@ -1,0 +1,7 @@
+heroku create johnu-hunchentoot -s cedar --buildpack http://github.com/johnu/heroku-buildpack-cl.git
+
+heroku config:add CL_IMPL=sbcl --app johnu-hunchentoot
+
+heroku config:add CL_WEBSERVER=hunchentoot --app johnu-hunchentoot
+
+heroku config:add LANG=en_US.UTF-8 --app johnu-hunchentoot

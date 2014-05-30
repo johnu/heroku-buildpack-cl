@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bin/compile <build-dir> <cache-dir>
+# bin/compile <build-dir> <cache-dir> <env-dir>
 
 mktmpdir() {
   dir=$(mktemp -t node-$1-XXXX)
@@ -15,13 +15,35 @@ function indent() {
   esac
 }
 
+
+ENV_DIR=$3
+echo $ENV_DIR
+whitelist_regex=${2:-'^(CL_IMPL|CL_WEBSERVER)$'}
+blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
+if [ -d "$ENV_DIR" ]; then
+  for e in $(ls $ENV_DIR); do
+    echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
+    export "$e=$(cat $ENV_DIR/$e)"
+    :
+  done
+fi
+
+export "CL_IMPL=$(cat $ENV_DIR/CL_IMPL)"
+export "CL_WEBSERVER=$(cat $ENV_DIR/CL_WEBSERVER)"
+
+cat $ENV_DIR/CL_IMPL
+
+echo "FOO $CL_IMPL"
+
 # parse and derive params
 BUILDPACK_DIR=$(cd $(dirname $0); cd ..; pwd) # absolute path of buildpack
 BUILD_DIR=$1
 CACHE_DIR=$2
 
+ls -la $ENV_DIR
+
 CL_DIR="$CACHE_DIR/$CL_IMPL"
-echo "-----> compile params: $BUILD_DIR $CACHE_DIR"
+echo "-----> compile params: $BUILD_DIR $CACHE_DIR $ENV_DIR"
 
 if [ $RESET_CACHE ]; then
   echo "-----> flushing cache"
